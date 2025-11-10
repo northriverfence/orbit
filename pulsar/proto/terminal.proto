@@ -1,0 +1,219 @@
+// Pulsar Terminal Service Protocol
+// High-performance gRPC interface for terminal operations
+
+syntax = "proto3";
+
+package pulsar.terminal;
+
+// Terminal Management Service
+service TerminalService {
+  // Session Management
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+  rpc TerminateSession(TerminateSessionRequest) returns (TerminateSessionResponse);
+  rpc AttachSession(AttachSessionRequest) returns (AttachSessionResponse);
+  rpc DetachSession(DetachSessionRequest) returns (DetachSessionResponse);
+
+  // I/O Operations (Streaming)
+  rpc StreamOutput(StreamOutputRequest) returns (stream TerminalOutput);
+  rpc StreamInput(stream TerminalInput) returns (StreamInputResponse);
+  rpc StreamBidirectional(stream TerminalInput) returns (stream TerminalOutput);
+
+  // Control Operations
+  rpc ResizeTerminal(ResizeTerminalRequest) returns (ResizeTerminalResponse);
+  rpc SendSignal(SendSignalRequest) returns (SendSignalResponse);
+
+  // Status Operations
+  rpc GetDaemonStatus(GetDaemonStatusRequest) returns (GetDaemonStatusResponse);
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// Session Types
+enum SessionType {
+  SESSION_TYPE_UNSPECIFIED = 0;
+  SESSION_TYPE_LOCAL = 1;
+  SESSION_TYPE_SSH = 2;
+  SESSION_TYPE_SERIAL = 3;
+}
+
+// Session State
+enum SessionState {
+  SESSION_STATE_UNSPECIFIED = 0;
+  SESSION_STATE_RUNNING = 1;
+  SESSION_STATE_DETACHED = 2;
+  SESSION_STATE_STOPPED = 3;
+}
+
+// Create Session
+message CreateSessionRequest {
+  string name = 1;
+  uint32 cols = 2;
+  uint32 rows = 3;
+  SessionType type = 4;
+
+  oneof config {
+    LocalSessionConfig local = 5;
+    SshSessionConfig ssh = 6;
+    SerialSessionConfig serial = 7;
+  }
+}
+
+message LocalSessionConfig {
+  string shell = 1;           // e.g., "/bin/bash"
+  string working_dir = 2;
+  map<string, string> env = 3;
+}
+
+message SshSessionConfig {
+  string host = 1;
+  uint32 port = 2;
+  string username = 3;
+  string password = 4;
+  string private_key_path = 5;
+}
+
+message SerialSessionConfig {
+  string device = 1;
+  uint32 baud_rate = 2;
+}
+
+message CreateSessionResponse {
+  string session_id = 1;
+  bool success = 2;
+  string error_message = 3;
+}
+
+// List Sessions
+message ListSessionsRequest {
+  // Optional filters
+  SessionType type_filter = 1;
+  SessionState state_filter = 2;
+}
+
+message SessionInfo {
+  string session_id = 1;
+  string name = 2;
+  SessionType type = 3;
+  SessionState state = 4;
+  int64 created_at = 5;      // Unix timestamp
+  int64 last_active = 6;     // Unix timestamp
+  uint32 num_clients = 7;
+  uint32 cols = 8;
+  uint32 rows = 9;
+}
+
+message ListSessionsResponse {
+  repeated SessionInfo sessions = 1;
+}
+
+// Get Session
+message GetSessionRequest {
+  string session_id = 1;
+}
+
+message GetSessionResponse {
+  SessionInfo session = 1;
+  bool success = 2;
+  string error_message = 3;
+}
+
+// Terminate Session
+message TerminateSessionRequest {
+  string session_id = 1;
+}
+
+message TerminateSessionResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+// Attach Session
+message AttachSessionRequest {
+  string session_id = 1;
+  string client_id = 2;
+}
+
+message AttachSessionResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+// Detach Session
+message DetachSessionRequest {
+  string session_id = 1;
+  string client_id = 2;
+}
+
+message DetachSessionResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+// Terminal Output (streaming)
+message StreamOutputRequest {
+  string session_id = 1;
+}
+
+message TerminalOutput {
+  bytes data = 1;
+  uint64 sequence = 2;
+  int64 timestamp = 3;
+  string session_id = 4;
+}
+
+// Terminal Input (streaming)
+message TerminalInput {
+  string session_id = 1;
+  bytes data = 2;
+  uint64 sequence = 3;
+  int64 timestamp = 4;
+}
+
+message StreamInputResponse {
+  uint64 bytes_written = 1;
+  bool success = 2;
+  string error_message = 3;
+}
+
+// Resize Terminal
+message ResizeTerminalRequest {
+  string session_id = 1;
+  uint32 cols = 2;
+  uint32 rows = 3;
+}
+
+message ResizeTerminalResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+// Send Signal
+message SendSignalRequest {
+  string session_id = 1;
+  uint32 signal = 2;  // POSIX signal number
+}
+
+message SendSignalResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+// Daemon Status
+message GetDaemonStatusRequest {}
+
+message GetDaemonStatusResponse {
+  string version = 1;
+  int64 uptime_seconds = 2;
+  uint32 num_sessions = 3;
+  uint32 num_clients = 4;
+  map<string, string> config = 5;
+}
+
+// Health Check
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  bool healthy = 1;
+  string message = 2;
+}

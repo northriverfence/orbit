@@ -1,0 +1,67 @@
+[package]
+name = "pulsar-daemon"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Local dependencies
+tft-core = { path = "../tft-core" }
+tft-transports = { path = "../tft-transports" }
+terminal-core = { path = "../terminal-core" }
+
+# Async runtime
+tokio = { workspace = true }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# Utilities
+uuid = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+base64 = "0.22"
+blake3 = "1.5"
+
+# WebSocket support
+axum = { version = "0.7", features = ["ws"] }
+tokio-tungstenite = "0.21"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors"] }
+
+# gRPC support
+tonic = "0.12"
+prost = "0.13"
+prost-types = "0.13"
+
+# WebTransport / QUIC support
+quinn = "0.11"
+rustls = { version = "0.23", features = ["ring"] }
+rustls-pemfile = "2.2"
+rcgen = "0.13"
+
+# System
+dirs = { workspace = true }
+
+# IPC (Unix socket communication with Orbit)
+interprocess = "2.2"
+
+# Database (shared with Orbit)
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
+
+[build-dependencies]
+tonic-build = "0.12"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+tempfile = "3.13"

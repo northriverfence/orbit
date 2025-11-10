@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal WASM Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 {
+            color: #569cd6;
+        }
+        .terminal-container {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 800px;
+            margin: 20px 0;
+        }
+        #output {
+            white-space: pre;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #0f0;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            background: #569cd6;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #4a8cc7;
+        }
+        .stats {
+            margin: 20px 0;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 5px;
+        }
+        .stat-item {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Terminal WASM Demo</h1>
+    <p>High-performance terminal emulation in WebAssembly</p>
+
+    <div class="controls">
+        <button onclick="testBasicText()">Test Basic Text</button>
+        <button onclick="testColors()">Test Colors</button>
+        <button onclick="testCursorMovement()">Test Cursor</button>
+        <button onclick="testLargeOutput()">Test Performance</button>
+        <button onclick="clearTerminal()">Clear</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat-item">Module Version: <span id="version">Loading...</span></div>
+        <div class="stat-item">Terminal Size: <span id="size">80x24</span></div>
+        <div class="stat-item">Cursor Position: <span id="cursor">0, 0</span></div>
+        <div class="stat-item">Last Operation: <span id="lastop">-</span></div>
+        <div class="stat-item">Time Taken: <span id="time">-</span></div>
+    </div>
+
+    <div class="terminal-container">
+        <div id="output"></div>
+    </div>
+
+    <script type="module">
+        import init, { Terminal, version } from './pkg/terminal_wasm.js';
+
+        let terminal;
+
+        async function initWasm() {
+            await init();
+
+            document.getElementById('version').textContent = version();
+
+            terminal = new Terminal(80, 24);
+            updateDisplay();
+            console.log('Terminal WASM initialized');
+        }
+
+        function updateDisplay() {
+            const screen = terminal.get_screen_text();
+            document.getElementById('output').textContent = screen;
+            document.getElementById('cursor').textContent =
+                `${terminal.cursor_col()}, ${terminal.cursor_row()}`;
+        }
+
+        window.testBasicText = function() {
+            const start = performance.now();
+            terminal.write("Hello from WebAssembly Terminal!\n");
+            terminal.write("This is a high-performance terminal emulator.\n");
+            terminal.write("✨ Supports Unicode: こんにちは 世界 🌍\n");
+            const end = performance.now();
+
+            updateDisplay();
+            updateStats("Basic Text", end - start);
+        };
+
+        window.testColors = function() {
+            const start = performance.now();
+            terminal.write("\x1b[31mRed text\x1b[0m\n");
+            terminal.write("\x1b[32mGreen text\x1b[0m\n");
+            terminal.write("\x1b[33mYellow text\x1b[0m\n");
+            terminal.write("\x1b[34mBlue text\x1b[0m\n");
+            terminal.write("\x1b[1mBold\x1b[0m \x1b[4mUnderline\x1b[0m \x1b[7mInverse\x1b[0m\n");
+            const end = performance.now();
+
+            updateDisplay();
+            updateStats("ANSI Colors", end - start);
+        };
+
+        window.testCursorMovement = function() {
+            const start = performance.now();
+            terminal.clear();
+            terminal.write("Testing cursor movement...\n");
+            terminal.write("\x1b[5;10H"); // Move cursor to row 5, col 10
+            terminal.write("Here!");
+            terminal.write("\x1b[10;30H"); // Move to row 10, col 30
+            terminal.write("And here!");
+            const end = performance.now();
+
+            updateDisplay();
+            updateStats("Cursor Movement", end - start);
+        };
+
+        window.testLargeOutput = function() {
+            const start = performance.now();
+            terminal.clear();
+
+            // Write 1000 lines to test performance
+            for (let i = 0; i < 1000; i++) {
+                terminal.write(`Line ${i}: The quick brown fox jumps over the lazy dog\n`);
+            }
+
+            const end = performance.now();
+
+            updateDisplay();
+            updateStats("1000 Lines", end - start);
+        };
+
+        window.clearTerminal = function() {
+            terminal.clear();
+            updateDisplay();
+            updateStats("Clear", 0);
+        };
+
+        function updateStats(operation, time) {
+            document.getElementById('lastop').textContent = operation;
+            document.getElementById('time').textContent = `${time.toFixed(2)}ms`;
+        }
+
+        // Initialize on load
+        initWasm();
+    </script>
+</body>
+</html>

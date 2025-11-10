@@ -1,0 +1,278 @@
+/**
+ * TerminalPage - Example page showing PulsarTerminal usage
+ *
+ * Features:
+ * - Multi-terminal tabs
+ * - Session management
+ * - Terminal controls
+ */
+
+import React, { useState } from 'react';
+import PulsarTerminal from '../components/PulsarTerminal';
+import { invoke } from '@tauri-apps/api/core';
+
+interface TerminalTab {
+  id: string;
+  sessionId: string;
+  title: string;
+}
+
+export const TerminalPage: React.FC = () => {
+  const [tabs, setTabs] = useState<TerminalTab[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [daemonStatus, setDaemonStatus] = useState<any>(null);
+
+  // Create new terminal tab
+  const createTab = () => {
+    const id = `tab-${Date.now()}`;
+    const newTab: TerminalTab = {
+      id,
+      sessionId: '', // Will be set by onSessionCreated
+      title: `Terminal ${tabs.length + 1}`,
+    };
+
+    setTabs([...tabs, newTab]);
+    setActiveTabId(id);
+  };
+
+  // Close tab
+  const closeTab = (tabId: string) => {
+    const updatedTabs = tabs.filter((tab) => tab.id !== tabId);
+    setTabs(updatedTabs);
+
+    if (activeTabId === tabId && updatedTabs.length > 0) {
+      setActiveTabId(updatedTabs[0].id);
+    } else if (updatedTabs.length === 0) {
+      setActiveTabId(null);
+    }
+  };
+
+  // Handle session created
+  const handleSessionCreated = (tabId: string, sessionId: string) => {
+    setTabs((prevTabs) =>
+      prevTabs.map((tab) =>
+        tab.id === tabId ? { ...tab, sessionId } : tab
+      )
+    );
+  };
+
+  // Get daemon status
+  const refreshDaemonStatus = async () => {
+    try {
+      const status = await invoke('daemon_get_status', {});
+      setDaemonStatus(status);
+    } catch (err) {
+      console.error('Failed to get daemon status:', err);
+    }
+  };
+
+  // List all sessions
+  const listSessions = async () => {
+    try {
+      const sessions = await invoke('daemon_list_sessions', {});
+      console.log('Active sessions:', sessions);
+      alert(`Active sessions: ${JSON.stringify(sessions, null, 2)}`);
+    } catch (err) {
+      console.error('Failed to list sessions:', err);
+      alert(`Error: ${err}`);
+    }
+  };
+
+  // Initial setup
+  React.useEffect(() => {
+    refreshDaemonStatus();
+  }, []);
+
+  const activeTab = tabs.find((tab) => tab.id === activeTabId);
+
+  return (
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <h1 style={styles.title}>Pulsar Terminal</h1>
+        <div style={styles.controls}>
+          <button onClick={createTab} style={styles.button}>
+            + New Terminal
+          </button>
+          <button onClick={listSessions} style={styles.button}>
+            List Sessions
+          </button>
+          <button onClick={refreshDaemonStatus} style={styles.button}>
+            Refresh Status
+          </button>
+        </div>
+      </div>
+
+      {/* Status bar */}
+      {daemonStatus && (
+        <div style={styles.statusBar}>
+          <span>Version: {daemonStatus.version}</span>
+          <span>Uptime: {daemonStatus.uptime_seconds}s</span>
+          <span>Sessions: {daemonStatus.num_sessions}</span>
+          <span>Clients: {daemonStatus.num_clients}</span>
+        </div>
+      )}
+
+      {/* Tabs */}
+      {tabs.length > 0 && (
+        <div style={styles.tabs}>
+          {tabs.map((tab) => (
+            <div
+              key={tab.id}
+              style={{
+                ...styles.tab,
+                ...(activeTabId === tab.id ? styles.activeTab : {}),
+              }}
+              onClick={() => setActiveTabId(tab.id)}
+            >
+              <span>{tab.title}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeTab(tab.id);
+                }}
+                style={styles.closeButton}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Terminal content */}
+      <div style={styles.content}>
+        {tabs.length === 0 ? (
+          <div style={styles.empty}>
+            <h2>No terminals open</h2>
+            <p>Click "New Terminal" to get started</p>
+            <button onClick={createTab} style={styles.largeButton}>
+              Create Terminal
+            </button>
+          </div>
+        ) : (
+          tabs.map((tab) => (
+            <div
+              key={tab.id}
+              style={{
+                display: activeTabId === tab.id ? 'block' : 'none',
+                width: '100%',
+                height: '100%',
+              }}
+            >
+              <PulsarTerminal
+                onSessionCreated={(sessionId) =>
+                  handleSessionCreated(tab.id, sessionId)
+                }
+                onSessionClosed={() => console.log(`Session closed: ${tab.sessionId}`)}
+              />
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: '#1e1e1e',
+    color: '#d4d4d4',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '10px 20px',
+    backgroundColor: '#2d2d2d',
+    borderBottom: '1px solid #3e3e3e',
+  },
+  title: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: 600,
+  },
+  controls: {
+    display: 'flex',
+    gap: '10px',
+  },
+  button: {
+    padding: '6px 12px',
+    backgroundColor: '#0e639c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '3px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: 500,
+  },
+  largeButton: {
+    padding: '12px 24px',
+    backgroundColor: '#0e639c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    fontWeight: 600,
+  },
+  statusBar: {
+    display: 'flex',
+    gap: '20px',
+    padding: '5px 20px',
+    backgroundColor: '#252526',
+    fontSize: '12px',
+    borderBottom: '1px solid #3e3e3e',
+  },
+  tabs: {
+    display: 'flex',
+    backgroundColor: '#252526',
+    borderBottom: '1px solid #3e3e3e',
+    overflowX: 'auto',
+  },
+  tab: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 16px',
+    backgroundColor: '#2d2d2d',
+    borderRight: '1px solid #3e3e3e',
+    cursor: 'pointer',
+    fontSize: '13px',
+    userSelect: 'none',
+  },
+  activeTab: {
+    backgroundColor: '#1e1e1e',
+    borderBottom: '2px solid #0e639c',
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    color: '#999',
+    fontSize: '20px',
+    cursor: 'pointer',
+    padding: '0 4px',
+    lineHeight: '1',
+  },
+  content: {
+    flex: 1,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  empty: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    gap: '20px',
+    color: '#999',
+  },
+};
+
+export default TerminalPage;

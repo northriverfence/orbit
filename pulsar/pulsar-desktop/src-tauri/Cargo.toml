@@ -1,0 +1,62 @@
+[package]
+name = "pulsar-desktop"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2.0.6", features = [] }
+
+[dependencies]
+# Local dependencies
+orbitd = { path = "../../../orbitd" }
+tft-core = { path = "../../tft-core" }
+tft-transports = { path = "../../tft-transports" }
+terminal-core = { path = "../../terminal-core" }
+
+# Tauri
+tauri = { version = "2.1.1", features = [] }
+tauri-plugin-shell = "2.0.3"
+tauri-plugin-notification = "2"
+
+# Async runtime
+tokio = { workspace = true }
+futures = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = "0.8"
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# SSH
+russh = { workspace = true }
+
+# Utilities
+uuid = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+dirs = { workspace = true }
+chrono = { workspace = true }
+
+# IPC (communicate with pulsar-daemon)
+interprocess = "2.2"
+
+# Vault/encryption
+argon2 = "0.5"
+chacha20poly1305 = { version = "0.10", features = ["std"] }
+zeroize = { version = "1.7", features = ["derive"] }
+rand = "0.8"
+base64 = "0.22"
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "macros", "migrate"] }
+tempfile = "3"
+
+[dev-dependencies]
+tempfile = "3"
+
+[features]
+default = []
