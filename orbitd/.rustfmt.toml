@@ -1,0 +1,2 @@
+# Symlink to rustfmt.toml for backward compatibility
+# Run: cargo fmt to format all code

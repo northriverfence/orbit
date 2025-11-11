@@ -4,7 +4,8 @@ members = [
     "tft-transports",
     "terminal-core",
     "pulsar-daemon",
-    # "pulsar-desktop/src-tauri", # Temporarily disabled - has dependency on non-existent orbitd crate
+    "pulsar-desktop/src-tauri",
+    "../orbitd",
 ]
 resolver = "2"
 

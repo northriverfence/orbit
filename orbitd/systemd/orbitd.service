@@ -1,0 +1,31 @@
+[Unit]
+Description=Orbit AI Terminal Daemon
+Documentation=https://github.com/singulio/orbit
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/orbitd
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.config/orbit %h/.local/share/orbit
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+
+# Environment
+Environment="RUST_LOG=info"
+Environment="ORBIT_CONFIG_DIR=%h/.config/orbit"
+Environment="ORBIT_DATA_DIR=%h/.local/share/orbit"
+
+[Install]
+WantedBy=default.target

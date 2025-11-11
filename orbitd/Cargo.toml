@@ -1,0 +1,102 @@
+[package]
+name = "orbitd"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "orbitd"
+path = "src/main.rs"
+
+[dependencies]
+# Workspace dependencies
+tokio = { workspace = true }
+tokio-util = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+reqwest = { workspace = true }
+sqlx = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+sha1 = { workspace = true }
+dirs = { workspace = true }
+ring = { workspace = true }
+base64 = { workspace = true }
+bytes = { workspace = true }
+
+# Daemon-specific
+daemonize = "0.5"
+signal-hook = "0.3"
+signal-hook-tokio = { version = "0.3", features = ["futures-v0_3"] }
+nix = { version = "0.29", features = ["signal", "process"] }
+async-trait = "0.1"
+git2 = "0.19"
+aes-gcm = "0.10"
+sha2 = "0.10"
+keyring = "3.6"
+notify-rust = "4.11"
+sysinfo = "0.31"
+machine-uid = "0.5"
+ndarray = "0.16"
+
+# Windows-specific
+[target.'cfg(windows)'.dependencies]
+windows-service = "0.7"
+winapi = { version = "0.3", features = ["winerror", "winbase"] }
+
+# Embeddings
+ndarray = "0.16"
+# TODO: Add back when ONNX Runtime API is stable
+# ort = { version = "2.0.0-rc.7", default-features = false, features = ["load-dynamic"] }
+# tokenizers = "0.20"
+# hf-hub = { version = "0.3", features = ["tokio"] }
+
+# System info
+sysinfo = "0.31"
+machine-uid = "0.5"
+
+# Cryptography
+aes-gcm = "0.10"
+sha2 = "0.10"
+keyring = "3.6"
+
+# Notifications
+notify-rust = "4.11"
+
+# Git
+git2 = "0.19"
+
+[dev-dependencies]
+tempfile = "3.13"
+assert_cmd = "2.0"
+predicates = "3.1"
+mockito = "1.5"
+serial_test = "3.1"
+criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+
+[lib]
+name = "orbitd"
+path = "src/lib.rs"
+
+[[test]]
+name = "integration"
+path = "tests/integration.rs"
+
+[[bench]]
+name = "performance"
+harness = false
+
+[[bench]]
+name = "provider_benchmarks"
+harness = false
+
+[[bench]]
+name = "ipc_benchmark"
+harness = false
