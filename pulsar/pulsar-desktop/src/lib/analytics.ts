@@ -8,6 +8,8 @@
  * - Transparent data collection
  */
 
+import React from 'react';
+
 interface AnalyticsEvent {
   event: string;
   properties?: Record<string, unknown>;
@@ -241,7 +243,7 @@ class Analytics {
   /**
    * Send event to backend (placeholder)
    */
-  private async sendToBackend(event: AnalyticsEvent): Promise<void> {
+  private async sendToBackend(_event: AnalyticsEvent): Promise<void> {
     // TODO: Implement backend endpoint
     // For now, just store locally
     // In production, send to analytics service
@@ -330,7 +332,7 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // Expose analytics to console (for debugging)
 if (import.meta.env.DEV) {
-  (window as Window & { analytics: Analytics }).analytics = analytics;
+  (window as unknown as Window & { analytics: Analytics }).analytics = analytics;
 }
 
 export default analytics;

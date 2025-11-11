@@ -4,6 +4,8 @@
  * Provides tools for measuring and optimizing React component performance
  */
 
+import React from 'react';
+
 interface PerformanceMetric {
   name: string;
   duration: number;
