@@ -106,9 +106,6 @@ export default function WorkspaceDialog({ isOpen, onClose, workspace, template }
         if (template) {
           // Use template layout
           layout = template.layout;
-        } else if (selectedLayout === 'custom' && workspace) {
-          // Keep existing layout (shouldn't happen, but safeguard)
-          layout = workspace.layout;
         } else {
           // Use selected template
           const layoutTemplate = layoutTemplates.find(lt => lt.id === selectedLayout);

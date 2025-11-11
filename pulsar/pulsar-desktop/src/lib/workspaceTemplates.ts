@@ -4,7 +4,7 @@
  * Pre-built workspace layouts for common development scenarios
  */
 
-import type { WorkspaceLayout, PaneConfig } from '../types/workspace';
+import type { WorkspaceLayout } from '../types/workspace';
 
 export interface WorkspaceTemplate {
   id: string;
