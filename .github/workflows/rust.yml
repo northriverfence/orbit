@@ -15,8 +15,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Install protobuf compiler
+      run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
     - name: Build
       run: cargo build --verbose
+      working-directory: ./pulsar
     - name: Run tests
       run: cargo test --verbose
+      working-directory: ./pulsar
   
