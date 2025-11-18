@@ -1,6 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-sidebar-bg: #F7F8FA;
+  --color-sidebar-hover: #E8EAED;
+  --color-sidebar-active: #D1D5DB;
+  --color-accent-primary: #10B981;
+  --color-accent-primary-dark: #059669;
+  --color-accent-secondary: #8B5CF6;
+  --color-accent-secondary-dark: #7C3AED;
+}
 
 :root {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
